@@ -60,18 +60,88 @@ This is designed as an educational/learning tool, allowing users to interact wit
 
 ## 📦 Installation
 
-### Using pip
+### Using uv
 
 ```bash
-pip install ios-forensics-mcp
+# Install using uv
+uv install ios-forensics-mcp
 ```
 
 ### From source
 
 ```bash
-git clone https://github.com/ios-forensics/ios-forensics-mcp.git
+# Clone the repository
+git clone https://github.com/RLabs-Inc/ios-forensics-mcp.git
 cd ios-forensics-mcp
-pip install -e .
+
+# Install dependencies (automatically uses editable mode)
+uv sync
+```
+
+## Claude Desktop Setup
+
+Add the MCP server to your Claude Desktop configuration file (typically located at ~/.claude/config.json or similar path based on your OS):
+
+```json
+{
+  "mcpServers": {
+    "ios-forensics": {
+      "command": "uv",
+      "args": [
+        "run",
+        "ios-forensics-mcp",
+        "--root-path",
+        "/path/to/ios_extraction"
+      ]
+    }
+  }
+}
+```
+
+After adding this configuration, restart Claude Desktop, and the iOS Forensics MCP server will appear in your available servers list.
+
+### Using with Claude
+
+Once the server is running and configured with Claude, you can start asking forensic questions:
+
+- "Can you show me the SMS messages from this device?"
+- "Extract location data from this iPhone and create a timeline"
+- "Analyze the call history and show me frequently contacted numbers"
+- "Find deleted messages in the SMS database"
+- "Generate a report of all activity on March 15th"
+- "What apps are installed on this device?"
+- "Show me the last known location of this device"
+- "Extract photos and their geolocation data"
+- "Analyze the browser history for suspicious activity"
+- "Find all contacts with phone numbers"
+
+## Claude Code Integration
+
+To use iOS Forensics MCP with Claude Code, you need to add it as an MCP server. First ensure you have Claude Code installed:
+
+```bash
+# Install Claude Code if not already installed
+npm install -g @anthropic-ai/claude-code
+```
+
+Then add the iOS Forensics MCP server to Claude Code:
+
+```bash
+# Add the MCP server to Claude Code
+claude mcp add ios-forensics uv run ios-forensics-mcp --root-path /path/to/ios_extraction
+
+# Or if you want to share with everyone in your project (creates .mcp.json)
+claude mcp add ios-forensics -s project uv run ios-forensics-mcp --root-path /path/to/ios_extraction
+
+# To verify the server was added
+claude mcp get ios-forensics
+```
+
+You can also import this MCP server from Claude Desktop to Claude Code:
+
+```bash
+# Import servers from Claude Desktop
+claude mcp add-from-claude-desktop
 ```
 
 ## 🔧 Configuration
@@ -106,31 +176,6 @@ ios-forensics-mcp --config /path/to/config.json
 ios-forensics-mcp --root-path /path/to/ios_extraction
 ```
 
-### Configuring Claude Desktop
-
-Add the MCP server to your Claude Desktop configuration:
-
-```json
-{
-  "mcpServers": {
-    "ios-forensics": {
-      "command": "ios-forensics-mcp",
-      "args": ["--root-path", "/path/to/ios_extraction"]
-    }
-  }
-}
-```
-
-### Using with Claude
-
-Once the server is running and configured with Claude, you can start asking forensic questions:
-
-- "Can you show me the SMS messages from this device?"
-- "Extract location data from this iPhone and create a timeline"
-- "Analyze the call history and show me frequently contacted numbers"
-- "Find deleted messages in the SMS database"
-- "Generate a report of all activity on March 15th"
-
 ## 🗂️ Project Structure
 
 ```
@@ -148,7 +193,7 @@ ios_forensics_mcp/
 
 ## 📚 Documentation
 
-For detailed documentation on each tool and its capabilities, see the [documentation](https://github.com/ios-forensics/ios-forensics-mcp/docs).
+For detailed documentation on each tool and its capabilities, see the [documentation](https://github.com/rlabs-inc/ios-forensics-mcp/docs).
 
 ## 🛡️ Security Considerations
 

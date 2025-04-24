@@ -5,9 +5,10 @@ description = "iOS Forensics MCP Server for analyzing iPhone/iPad file systems"
 readme = "README.md"
 
 authors = [
-    { name = "Rodrigo Luglio", email = "rodrigo@rlabs.com.br" }
+    { name = "RLabs Inc.", email = "rodrigo@rlabs.com.br" }
 ]
 
+repository = "https://github.com/RLabs-Inc/ios-forensics-mcp"
 license = {text = "MIT"}
 
 classifiers = [
