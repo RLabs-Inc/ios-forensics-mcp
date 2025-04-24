@@ -19,17 +19,11 @@ DEFAULT_CONFIG = {
     
     # iOS file system settings
     'ios_filesystem': {
-        'root_path': './ios_extraction',
+        'root_path': '/Users/rusty/Downloads',
         'read_only': True,  # Read-only mode for evidence preservation
         'allowed_paths': [
-            'private/var/mobile/Library',
-            'private/var/mobile/Containers',
-            'private/var/mobile/Media',
-            'private/var/root'
+            'private/var/*',
         ],
-        'excluded_paths': [
-            'private/var/mobile/Library/Caches'
-        ]
     },
     
     # Tool settings

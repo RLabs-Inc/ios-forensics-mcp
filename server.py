@@ -34,7 +34,7 @@ from .tools.plist import parser
 import sys
 
 # Direct import of the config module from the package
-from .config_module import IOS_FILESYSTEM_ROOT, LOG_LEVEL, SERVER_PORT
+from .config import IOS_FILESYSTEM_ROOT, LOG_LEVEL, SERVER_PORT
 
 # Setup logging
 logger = setup_logging(LOG_LEVEL)

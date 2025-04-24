@@ -7,7 +7,7 @@ authors = [
     { name = "RLabs Inc.", email = "rodrigo@rlabs.com.br" }
 ]
 license = {text = "MIT"}
-
+repository = "https://github.com/RLabs-Inc/ios-forensics-mcp"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -16,49 +16,17 @@ classifiers = [
     "Topic :: System :: Forensics",
 ]
 
-requires-python = ">=3.11"
-
 dependencies = [
-    "biplist",
-    "chardet>=5.2.0",
+    "biplist>=1.0.3",
     "mcp[cli]>=1.6.0",
-    "pillow",
-    "python-magic",
+    "pillow>=11.2.1",
+    "python-magic>=0.4.27",
 ]
 
 [dependency-groups]
 dev = [
-    "black",
-    "isort",
-    "mypy",
-    "pytest",
+    "black>=25.1.0",
+    "isort>=6.0.1",
+    "mypy>=1.15.0",
+    "pytest>=8.3.5",
 ]
-
-[tool.black]
-line-length = 100
-target-version = ["py39"]
-
-[tool.isort]
-profile = "black"
-line_length = 100
-
-[tool.mypy]
-python_version = "3.9"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-
-[project.scripts]
-ios-forensics-mcp = "ios_forensics_mcp:main"
-
-[build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-package-dir = {"" = "src"}
-packages = {find = {where = ["src"]}}
-
-[project.urls]
-repository = "https://github.com/RLabs-Inc/ios-forensics-mcp"
