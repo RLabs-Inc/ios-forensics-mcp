@@ -1,2 +1,41 @@
+# Import the server class and necessary modules
+from .server import IOSForensicsMCPServer
+import sys
+import os
+import importlib.util
+import pathlib
+
+# Dynamically import config.py from the root directory
+config_path = pathlib.Path(__file__).parent.parent.parent / "config.py"
+spec = importlib.util.spec_from_file_location("config", config_path)
+config = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(config)
+
+# Get the required variables from config
+IOS_FILESYSTEM_ROOT = config.IOS_FILESYSTEM_ROOT
+SERVER_PORT = config.SERVER_PORT
+
 def main() -> None:
-    print("Hello from ios-forensics-mcp!")
+    """
+    Entry point for the iOS Forensics MCP Server.
+    This function is called when running the package with 'uv run ios-forensics-mcp'.
+    """
+    # Get iOS root directory from command line arguments or config
+    if len(sys.argv) > 1:
+        ios_root = sys.argv[1]
+    else:
+        ios_root = IOS_FILESYSTEM_ROOT
+    
+    try:
+        # Initialize and start the server
+        server = IOSForensicsMCPServer(ios_root, SERVER_PORT)
+        server.start()
+    except KeyboardInterrupt:
+        print("Server stopped by user")
+    except Exception as e:
+        print(f"Error starting server: {str(e)}")
+        sys.exit(1)
+
+# This allows the module to be executed directly
+if __name__ == "__main__":
+    main()

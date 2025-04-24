@@ -3,7 +3,8 @@ from setuptools import setup, find_packages
 setup(
     name="ios_forensics_mcp",
     version="0.1.0",
-    packages=find_packages(),
+    package_dir={"": "src"},  # Add this line to indicate src directory
+    packages=find_packages(where="src"),  # Modify this to search in src
     install_requires=[
         "modelcontextprotocol",
         "biplist",
@@ -12,7 +13,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'ios-forensics-mcp=ios_forensics_mcp.server:main',
+            'ios-forensics-mcp=ios_forensics_mcp:main',
         ],
     },
     python_requires=">=3.11",

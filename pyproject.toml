@@ -3,12 +3,9 @@ name = "ios-forensics-mcp"
 version = "0.1.0"
 description = "iOS Forensics MCP Server for analyzing iPhone/iPad file systems"
 readme = "README.md"
-
 authors = [
     { name = "RLabs Inc.", email = "rodrigo@rlabs.com.br" }
 ]
-
-repository = "https://github.com/RLabs-Inc/ios-forensics-mcp"
 license = {text = "MIT"}
 
 classifiers = [
@@ -23,7 +20,7 @@ requires-python = ">=3.11"
 
 dependencies = [
     "biplist",
-    "modelcontextprotocol",
+    "modelcontextprotocol>=0.1.0",
     "pillow",
     "python-magic",
 ]
@@ -58,4 +55,9 @@ ios-forensics-mcp = "ios_forensics_mcp:main"
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["ios_forensics_mcp"]
 
+[project.urls]
+repository = "https://github.com/RLabs-Inc/ios-forensics-mcp"

@@ -12,28 +12,40 @@ try:
     from modelcontextprotocol.function import Function, Parameter, ParameterType
 except ImportError:
     print("Error: Model Context Protocol SDK not found. Please install with:")
-    print("pip install modelcontextprotocol")
+    print("uv add modelcontextprotocol")
     sys.exit(1)
 
 # Import utilities
-from utils.path_utils import (
+from .utils.path_utils import (
     is_path_valid,
     normalize_path,
     get_absolute_path,
     is_file_readable
 )
-from utils.logging_utils import setup_logging
+from .utils.logging_utils import setup_logging
 
 # Import tools
-from tools.filesystem.directory import list_directory
-from tools.filesystem.file_reader import read_file
-from tools.filesystem.file_type import identify_file_type
-from tools.filesystem.search import search_files
-from tools.sqlite.analyzer import find_databases, analyze_schema, execute_query
-from tools.plist.parser import parse_plist, query_plist
+from .tools.filesystem.directory import list_directory
+from .tools.filesystem.file_reader import read_file
+from .tools.filesystem.file_type import identify_file_type
+from .tools.filesystem.search import search_files
+from .tools.sqlite.analyzer import find_databases, analyze_schema, execute_query
+from .tools.plist.parser import parse_plist, query_plist
 
-# Configuration
-from config import IOS_FILESYSTEM_ROOT, LOG_LEVEL, SERVER_PORT
+# Configuration - dynamically import from root directory
+import importlib.util
+import pathlib
+
+# Dynamically import config.py from the root directory
+config_path = pathlib.Path(__file__).parent.parent.parent / "config.py"
+spec = importlib.util.spec_from_file_location("config", config_path)
+config = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(config)
+
+# Get the required variables from config
+IOS_FILESYSTEM_ROOT = config.IOS_FILESYSTEM_ROOT
+LOG_LEVEL = config.LOG_LEVEL
+SERVER_PORT = config.SERVER_PORT
 
 # Setup logging
 logger = setup_logging(LOG_LEVEL)
