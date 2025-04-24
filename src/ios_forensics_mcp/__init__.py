@@ -2,14 +2,9 @@
 import sys
 import os
 import pathlib
-import importlib.util
 
-# Default configuration values if config.py can't be loaded
-DEFAULT_IOS_FILESYSTEM_ROOT = './ios_extraction'
-DEFAULT_SERVER_PORT = 8080
-
-# Use the configuration from server.py
-from .server import IOS_FILESYSTEM_ROOT, SERVER_PORT
+# Import configuration module directly
+from .config_module import IOS_FILESYSTEM_ROOT, SERVER_PORT
 
 def main() -> None:
     """
