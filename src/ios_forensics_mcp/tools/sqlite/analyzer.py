@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Any, Tuple, Union
 logger = logging.getLogger(__name__)
 
 # Import utilities
-from utils.path_utils import find_files_by_extension, is_common_database_path
+from ...utils.path_utils import find_files_by_extension, is_common_database_path
 
 
 def is_sqlite_database(file_path: str) -> bool:

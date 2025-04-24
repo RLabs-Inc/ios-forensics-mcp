@@ -20,7 +20,8 @@ requires-python = ">=3.11"
 
 dependencies = [
     "biplist",
-    "modelcontextprotocol>=0.1.0",
+    "chardet>=5.2.0",
+    "mcp[cli]>=1.6.0",
     "pillow",
     "python-magic",
 ]

@@ -1,18 +1,16 @@
 # server.py - Main MCP server implementation
-
 import os
 import sys
 import json
 import logging
 from typing import Any, Dict, List, Optional, Union
 
-# Import MCP SDK
+# Import the FastMCP class
 try:
-    from modelcontextprotocol.server import MCPServer
-    from modelcontextprotocol.function import Function, Parameter, ParameterType
+    from mcp.server.fastmcp import FastMCP
 except ImportError:
-    print("Error: Model Context Protocol SDK not found. Please install with:")
-    print("uv add modelcontextprotocol")
+    print("Error: MCP SDK not found. Please install with:")
+    print("uv add \"mcp[cli]\"")
     sys.exit(1)
 
 # Import utilities
@@ -24,13 +22,13 @@ from .utils.path_utils import (
 )
 from .utils.logging_utils import setup_logging
 
-# Import tools
-from .tools.filesystem.directory import list_directory
-from .tools.filesystem.file_reader import read_file
-from .tools.filesystem.file_type import identify_file_type
-from .tools.filesystem.search import search_files
-from .tools.sqlite.analyzer import find_databases, analyze_schema, execute_query
-from .tools.plist.parser import parse_plist, query_plist
+# Import tools - import with renamed functions to avoid conflicts
+from .tools.filesystem import directory
+from .tools.filesystem import file_reader
+from .tools.filesystem import file_type
+from .tools.filesystem import search
+from .tools.sqlite import analyzer
+from .tools.plist import parser
 
 # Configuration - dynamically import from root directory
 import importlib.util
@@ -71,226 +69,18 @@ class IOSForensicsMCPServer:
             raise ValueError(f"iOS root directory does not exist: {self.ios_root}")
         
         self.port = port
-        self.server = MCPServer()
+        
+        # Create FastMCP server
+        self.mcp = FastMCP(
+            "iOS Forensics Tools",
+            version="0.1.0",
+            description="Tools for forensic analysis of iOS file systems"
+        )
         
         # Register all tools
         self._register_tools()
         
         logger.info(f"iOS Forensics MCP Server initialized with root: {self.ios_root}")
-    
-    def _register_tools(self):
-        """Register all forensic tools with the MCP server"""
-        
-        # File System Tools
-        self.server.register_function(
-            Function(
-                name="list_directory",
-                description="List contents of a directory in the iOS file system",
-                parameters=[
-                    Parameter(
-                        name="path",
-                        description="Path relative to iOS root",
-                        type=ParameterType.STRING,
-                        required=True
-                    ),
-                    Parameter(
-                        name="recursive",
-                        description="Whether to list directories recursively",
-                        type=ParameterType.BOOLEAN,
-                        required=False
-                    ),
-                    Parameter(
-                        name="show_hidden",
-                        description="Whether to show hidden files",
-                        type=ParameterType.BOOLEAN,
-                        required=False
-                    )
-                ],
-                handler=self._handle_list_directory
-            )
-        )
-        
-        self.server.register_function(
-            Function(
-                name="read_file",
-                description="Read the contents of a file in the iOS file system",
-                parameters=[
-                    Parameter(
-                        name="path",
-                        description="Path relative to iOS root",
-                        type=ParameterType.STRING,
-                        required=True
-                    ),
-                    Parameter(
-                        name="encoding",
-                        description="File encoding (auto, utf-8, binary, etc.)",
-                        type=ParameterType.STRING,
-                        required=False
-                    ),
-                    Parameter(
-                        name="offset",
-                        description="Starting byte offset",
-                        type=ParameterType.INTEGER,
-                        required=False
-                    ),
-                    Parameter(
-                        name="length",
-                        description="Number of bytes to read",
-                        type=ParameterType.INTEGER,
-                        required=False
-                    )
-                ],
-                handler=self._handle_read_file
-            )
-        )
-        
-        self.server.register_function(
-            Function(
-                name="identify_file_type",
-                description="Identify the type of a file based on content",
-                parameters=[
-                    Parameter(
-                        name="path",
-                        description="Path relative to iOS root",
-                        type=ParameterType.STRING,
-                        required=True
-                    )
-                ],
-                handler=self._handle_identify_file_type
-            )
-        )
-        
-        self.server.register_function(
-            Function(
-                name="search_files",
-                description="Search for files in the iOS file system",
-                parameters=[
-                    Parameter(
-                        name="base_path",
-                        description="Base path relative to iOS root",
-                        type=ParameterType.STRING,
-                        required=True
-                    ),
-                    Parameter(
-                        name="pattern",
-                        description="Search pattern",
-                        type=ParameterType.STRING,
-                        required=True
-                    ),
-                    Parameter(
-                        name="search_type",
-                        description="Type of search (filename, content, regex)",
-                        type=ParameterType.STRING,
-                        required=False
-                    )
-                ],
-                handler=self._handle_search_files
-            )
-        )
-        
-        # SQLite Database Tools
-        self.server.register_function(
-            Function(
-                name="find_databases",
-                description="Find SQLite databases in the iOS file system",
-                parameters=[
-                    Parameter(
-                        name="base_path",
-                        description="Base path relative to iOS root",
-                        type=ParameterType.STRING,
-                        required=False
-                    )
-                ],
-                handler=self._handle_find_databases
-            )
-        )
-        
-        self.server.register_function(
-            Function(
-                name="analyze_schema",
-                description="Analyze the schema of a SQLite database",
-                parameters=[
-                    Parameter(
-                        name="db_path",
-                        description="Path to the SQLite database relative to iOS root",
-                        type=ParameterType.STRING,
-                        required=True
-                    )
-                ],
-                handler=self._handle_analyze_schema
-            )
-        )
-        
-        self.server.register_function(
-            Function(
-                name="execute_query",
-                description="Execute a SQL query against a SQLite database",
-                parameters=[
-                    Parameter(
-                        name="db_path",
-                        description="Path to the SQLite database relative to iOS root",
-                        type=ParameterType.STRING,
-                        required=True
-                    ),
-                    Parameter(
-                        name="query",
-                        description="SQL query to execute",
-                        type=ParameterType.STRING,
-                        required=True
-                    ),
-                    Parameter(
-                        name="params",
-                        description="Query parameters (JSON)",
-                        type=ParameterType.STRING,
-                        required=False
-                    )
-                ],
-                handler=self._handle_execute_query
-            )
-        )
-        
-        # Plist Tools
-        self.server.register_function(
-            Function(
-                name="parse_plist",
-                description="Parse a property list file",
-                parameters=[
-                    Parameter(
-                        name="plist_path",
-                        description="Path to the plist file relative to iOS root",
-                        type=ParameterType.STRING,
-                        required=True
-                    )
-                ],
-                handler=self._handle_parse_plist
-            )
-        )
-        
-        self.server.register_function(
-            Function(
-                name="query_plist",
-                description="Query values from a property list file",
-                parameters=[
-                    Parameter(
-                        name="plist_path",
-                        description="Path to the plist file relative to iOS root",
-                        type=ParameterType.STRING,
-                        required=True
-                    ),
-                    Parameter(
-                        name="query_path",
-                        description="Query path (e.g., 'root.device.name')",
-                        type=ParameterType.STRING,
-                        required=True
-                    )
-                ],
-                handler=self._handle_query_plist
-            )
-        )
-        
-        # Register more tools here...
-        
-        logger.info("All forensic tools registered with MCP server")
     
     def _validate_path(self, path: str) -> str:
         """
@@ -313,118 +103,215 @@ class IOSForensicsMCPServer:
         
         return abs_path
     
-    # Handler implementations
-    
-    def _handle_list_directory(self, path: str, recursive: bool = False, show_hidden: bool = False) -> Dict:
-        """Handle list_directory function calls"""
-        try:
-            abs_path = self._validate_path(path)
-            result = list_directory(abs_path, recursive, show_hidden)
-            return {"success": True, "data": result}
-        except Exception as e:
-            logger.error(f"Error listing directory {path}: {str(e)}")
-            return {"success": False, "error": str(e)}
-    
-    def _handle_read_file(self, path: str, encoding: str = "auto", offset: int = 0, length: Optional[int] = None) -> Dict:
-        """Handle read_file function calls"""
-        try:
-            abs_path = self._validate_path(path)
-            if not is_file_readable(abs_path):
-                raise ValueError(f"File is not readable: {path}")
+    def _register_tools(self):
+        """Register all forensic tools with the MCP server"""
+        
+        # File System Tools
+        @self.mcp.tool()
+        def list_directory(path: str, recursive: bool = False, show_hidden: bool = False) -> Dict:
+            """
+            List contents of a directory in the iOS file system
             
-            result = read_file(abs_path, encoding, offset, length)
-            return {"success": True, "data": result}
-        except Exception as e:
-            logger.error(f"Error reading file {path}: {str(e)}")
-            return {"success": False, "error": str(e)}
-    
-    def _handle_identify_file_type(self, path: str) -> Dict:
-        """Handle identify_file_type function calls"""
-        try:
-            abs_path = self._validate_path(path)
-            result = identify_file_type(abs_path)
-            return {"success": True, "data": result}
-        except Exception as e:
-            logger.error(f"Error identifying file type for {path}: {str(e)}")
-            return {"success": False, "error": str(e)}
-    
-    def _handle_search_files(self, base_path: str, pattern: str, search_type: str = "filename") -> Dict:
-        """Handle search_files function calls"""
-        try:
-            abs_path = self._validate_path(base_path)
-            result = search_files(abs_path, pattern, search_type)
-            return {"success": True, "data": result}
-        except Exception as e:
-            logger.error(f"Error searching files in {base_path}: {str(e)}")
-            return {"success": False, "error": str(e)}
-    
-    def _handle_find_databases(self, base_path: Optional[str] = None) -> Dict:
-        """Handle find_databases function calls"""
-        try:
-            if base_path:
+            Args:
+                path: Path relative to iOS root
+                recursive: Whether to list directories recursively
+                show_hidden: Whether to show hidden files
+                
+            Returns:
+                Dictionary with directory contents
+            """
+            try:
+                abs_path = self._validate_path(path)
+                result = directory.list_directory(abs_path, recursive, show_hidden)
+                return {"success": True, "data": result}
+            except Exception as e:
+                logger.error(f"Error listing directory {path}: {str(e)}")
+                return {"success": False, "error": str(e)}
+        
+        @self.mcp.tool()
+        def read_file(path: str, encoding: str = "auto", offset: int = 0, length: Optional[int] = None) -> Dict:
+            """
+            Read the contents of a file in the iOS file system
+            
+            Args:
+                path: Path relative to iOS root
+                encoding: File encoding (auto, utf-8, binary, etc.)
+                offset: Starting byte offset
+                length: Number of bytes to read
+                
+            Returns:
+                Dictionary with file contents
+            """
+            try:
+                abs_path = self._validate_path(path)
+                if not is_file_readable(abs_path):
+                    raise ValueError(f"File is not readable: {path}")
+                
+                result = file_reader.read_file(abs_path, encoding, offset, length)
+                return {"success": True, "data": result}
+            except Exception as e:
+                logger.error(f"Error reading file {path}: {str(e)}")
+                return {"success": False, "error": str(e)}
+        
+        @self.mcp.tool()
+        def identify_file_type(path: str) -> Dict:
+            """
+            Identify the type of a file based on content
+            
+            Args:
+                path: Path relative to iOS root
+                
+            Returns:
+                Dictionary with file type information
+            """
+            try:
+                abs_path = self._validate_path(path)
+                result = file_type.identify_file_type(abs_path)
+                return {"success": True, "data": result}
+            except Exception as e:
+                logger.error(f"Error identifying file type for {path}: {str(e)}")
+                return {"success": False, "error": str(e)}
+        
+        @self.mcp.tool()
+        def search_files(base_path: str, pattern: str, search_type: str = "filename") -> Dict:
+            """
+            Search for files in the iOS file system
+            
+            Args:
+                base_path: Base path relative to iOS root
+                pattern: Search pattern
+                search_type: Type of search (filename, content, regex)
+                
+            Returns:
+                Dictionary with search results
+            """
+            try:
                 abs_path = self._validate_path(base_path)
-            else:
-                abs_path = self.ios_root
+                result = search.search_files(abs_path, pattern, search_type)
+                return {"success": True, "data": result}
+            except Exception as e:
+                logger.error(f"Error searching files in {base_path}: {str(e)}")
+                return {"success": False, "error": str(e)}
+        
+        # SQLite Database Tools
+        @self.mcp.tool()
+        def find_databases(base_path: Optional[str] = None) -> Dict:
+            """
+            Find SQLite databases in the iOS file system
             
-            result = find_databases(abs_path)
-            return {"success": True, "data": result}
-        except Exception as e:
-            logger.error(f"Error finding databases: {str(e)}")
-            return {"success": False, "error": str(e)}
-    
-    def _handle_analyze_schema(self, db_path: str) -> Dict:
-        """Handle analyze_schema function calls"""
-        try:
-            abs_path = self._validate_path(db_path)
-            result = analyze_schema(abs_path)
-            return {"success": True, "data": result}
-        except Exception as e:
-            logger.error(f"Error analyzing schema for {db_path}: {str(e)}")
-            return {"success": False, "error": str(e)}
-    
-    def _handle_execute_query(self, db_path: str, query: str, params: Optional[str] = None) -> Dict:
-        """Handle execute_query function calls"""
-        try:
-            abs_path = self._validate_path(db_path)
+            Args:
+                base_path: Base path relative to iOS root (optional)
+                
+            Returns:
+                Dictionary with database information
+            """
+            try:
+                if base_path:
+                    abs_path = self._validate_path(base_path)
+                else:
+                    abs_path = self.ios_root
+                
+                result = analyzer.find_databases(abs_path)
+                return {"success": True, "data": result}
+            except Exception as e:
+                logger.error(f"Error finding databases: {str(e)}")
+                return {"success": False, "error": str(e)}
+        
+        @self.mcp.tool()
+        def analyze_schema(db_path: str) -> Dict:
+            """
+            Analyze the schema of a SQLite database
             
-            # Parse parameters if provided
-            query_params = None
-            if params:
-                try:
-                    query_params = json.loads(params)
-                except json.JSONDecodeError:
-                    raise ValueError("Invalid JSON format for query parameters")
+            Args:
+                db_path: Path to the SQLite database relative to iOS root
+                
+            Returns:
+                Dictionary with schema information
+            """
+            try:
+                abs_path = self._validate_path(db_path)
+                result = analyzer.analyze_schema(abs_path)
+                return {"success": True, "data": result}
+            except Exception as e:
+                logger.error(f"Error analyzing schema for {db_path}: {str(e)}")
+                return {"success": False, "error": str(e)}
+        
+        @self.mcp.tool()
+        def execute_query(db_path: str, query: str, params: Optional[str] = None) -> Dict:
+            """
+            Execute a SQL query against a SQLite database
             
-            result = execute_query(abs_path, query, query_params)
-            return {"success": True, "data": result}
-        except Exception as e:
-            logger.error(f"Error executing query on {db_path}: {str(e)}")
-            return {"success": False, "error": str(e)}
-    
-    def _handle_parse_plist(self, plist_path: str) -> Dict:
-        """Handle parse_plist function calls"""
-        try:
-            abs_path = self._validate_path(plist_path)
-            result = parse_plist(abs_path)
-            return {"success": True, "data": result}
-        except Exception as e:
-            logger.error(f"Error parsing plist {plist_path}: {str(e)}")
-            return {"success": False, "error": str(e)}
-    
-    def _handle_query_plist(self, plist_path: str, query_path: str) -> Dict:
-        """Handle query_plist function calls"""
-        try:
-            abs_path = self._validate_path(plist_path)
-            result = query_plist(abs_path, query_path)
-            return {"success": True, "data": result}
-        except Exception as e:
-            logger.error(f"Error querying plist {plist_path}: {str(e)}")
-            return {"success": False, "error": str(e)}
+            Args:
+                db_path: Path to the SQLite database relative to iOS root
+                query: SQL query to execute
+                params: Query parameters (JSON)
+                
+            Returns:
+                Dictionary with query results
+            """
+            try:
+                abs_path = self._validate_path(db_path)
+                
+                # Parse parameters if provided
+                query_params = None
+                if params:
+                    try:
+                        query_params = json.loads(params)
+                    except json.JSONDecodeError:
+                        raise ValueError("Invalid JSON format for query parameters")
+                
+                result = analyzer.execute_query(abs_path, query, query_params)
+                return {"success": True, "data": result}
+            except Exception as e:
+                logger.error(f"Error executing query on {db_path}: {str(e)}")
+                return {"success": False, "error": str(e)}
+        
+        # Plist Tools
+        @self.mcp.tool()
+        def parse_plist(plist_path: str) -> Dict:
+            """
+            Parse a property list file
+            
+            Args:
+                plist_path: Path to the plist file relative to iOS root
+                
+            Returns:
+                Dictionary with parsed plist content
+            """
+            try:
+                abs_path = self._validate_path(plist_path)
+                result = parser.parse_plist(abs_path)
+                return {"success": True, "data": result}
+            except Exception as e:
+                logger.error(f"Error parsing plist {plist_path}: {str(e)}")
+                return {"success": False, "error": str(e)}
+        
+        @self.mcp.tool()
+        def query_plist(plist_path: str, query_path: str) -> Dict:
+            """
+            Query values from a property list file
+            
+            Args:
+                plist_path: Path to the plist file relative to iOS root
+                query_path: Query path (e.g., 'root.device.name')
+                
+            Returns:
+                Dictionary with query results
+            """
+            try:
+                abs_path = self._validate_path(plist_path)
+                result = parser.query_plist(abs_path, query_path)
+                return {"success": True, "data": result}
+            except Exception as e:
+                logger.error(f"Error querying plist {plist_path}: {str(e)}")
+                return {"success": False, "error": str(e)}
+        
+        logger.info("All forensic tools registered with MCP server")
     
     def start(self):
         """Start the MCP server"""
         logger.info(f"Starting iOS Forensics MCP Server on port {self.port}")
-        self.server.start(port=self.port)
+        self.mcp.run(port=self.port)
 
 
 # Main entry point

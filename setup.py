@@ -6,7 +6,7 @@ setup(
     package_dir={"": "src"},  # Add this line to indicate src directory
     packages=find_packages(where="src"),  # Modify this to search in src
     install_requires=[
-        "modelcontextprotocol",
+        "mcp[cli]>=1.6.0",
         "biplist",
         "python-magic",
         "pillow",
