@@ -1,18 +1,15 @@
 # Import necessary modules
 import sys
 import os
-import importlib.util
 import pathlib
+import importlib.util
 
-# Dynamically import config.py from the root directory
-config_path = pathlib.Path(__file__).parent.parent.parent / "config.py"
-spec = importlib.util.spec_from_file_location("config", config_path)
-config = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(config)
+# Default configuration values if config.py can't be loaded
+DEFAULT_IOS_FILESYSTEM_ROOT = './ios_extraction'
+DEFAULT_SERVER_PORT = 8080
 
-# Get the required variables from config
-IOS_FILESYSTEM_ROOT = config.IOS_FILESYSTEM_ROOT
-SERVER_PORT = config.SERVER_PORT
+# Use the configuration from server.py
+from .server import IOS_FILESYSTEM_ROOT, SERVER_PORT
 
 def main() -> None:
     """

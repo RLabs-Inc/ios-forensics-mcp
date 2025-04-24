@@ -31,14 +31,27 @@ from .tools.sqlite import analyzer
 from .tools.plist import parser
 
 # Configuration - dynamically import from root directory
-import importlib.util
 import pathlib
+import sys
+import importlib.util
 
 # Dynamically import config.py from the root directory
-config_path = pathlib.Path(__file__).parent.parent.parent / "config.py"
-spec = importlib.util.spec_from_file_location("config", config_path)
-config = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(config)
+config_path = str(pathlib.Path(__file__).parent.parent.parent)
+sys.path.insert(0, config_path)
+try:
+    # Use importlib.util instead of direct import
+    config_file_path = pathlib.Path(config_path) / "config.py"
+    spec = importlib.util.spec_from_file_location("config", config_file_path)
+    config = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(config)
+except (ImportError, AttributeError) as e:
+    print(f"Warning: Error loading config.py, using default values. Error: {e}")
+    # Create a minimal config module with default values
+    import types
+    config = types.ModuleType("config")
+    config.IOS_FILESYSTEM_ROOT = "./ios_extraction"
+    config.LOG_LEVEL = "INFO"
+    config.SERVER_PORT = 8080
 
 # Get the required variables from config
 IOS_FILESYSTEM_ROOT = config.IOS_FILESYSTEM_ROOT
