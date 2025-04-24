@@ -58,7 +58,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["ios_forensics_mcp"]
+packages = {find = {where = ["src"]}}
 
 [project.urls]
 repository = "https://github.com/RLabs-Inc/ios-forensics-mcp"

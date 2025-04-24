@@ -4,7 +4,7 @@ setup(
     name="ios_forensics_mcp",
     version="0.1.0",
     package_dir={"": "src"},
-    packages=find_packages(where="src"),
+    packages=find_packages(where="src", include=["ios_forensics_mcp", "ios_forensics_mcp.*"]),
     install_requires=[
         "mcp[cli]>=1.6.0",
         "biplist",

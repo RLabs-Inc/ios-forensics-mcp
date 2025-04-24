@@ -1,5 +1,4 @@
-# Import the server class and necessary modules
-from .server import IOSForensicsMCPServer
+# Import necessary modules
 import sys
 import os
 import importlib.util
@@ -20,6 +19,9 @@ def main() -> None:
     Entry point for the iOS Forensics MCP Server.
     This function is called when running the package with 'uv run ios-forensics-mcp'.
     """
+    # Import server class here to avoid circular imports
+    from .server import IOSForensicsMCPServer
+    
     # Get iOS root directory from command line arguments or config
     if len(sys.argv) > 1:
         ios_root = sys.argv[1]
