@@ -352,8 +352,9 @@ def setup_logging() -> logging.Logger:
     console_handler = logging.StreamHandler()
     console_handler.setLevel(getattr(logging, log_config['console_level']))
     
-    # Create file handler
-    file_handler = logging.FileHandler(log_config['file'])
+    # Create file handler with path in user's home directory to avoid permission issues
+    log_file = os.path.join(os.path.expanduser('~'), log_config['file'])
+    file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(getattr(logging, log_config['file_level']))
     
     # Create formatter
