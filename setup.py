@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 setup(
     name="ios_forensics_mcp",
     version="0.1.0",
-    package_dir={"": "src"},  # Add this line to indicate src directory
-    packages=find_packages(where="src"),  # Modify this to search in src
+    package_dir={"": "src"},
+    packages=find_packages(where="src"),
     install_requires=[
         "mcp[cli]>=1.6.0",
         "biplist",
