@@ -14,21 +14,21 @@ except ImportError:
     sys.exit(1)
 
 # Import utilities
-from ios_forensics_mcp.utils.path_utils import (
+from .utils.path_utils import (
     is_path_valid,
     normalize_path,
     get_absolute_path,
     is_file_readable
 )
-from ios_forensics_mcp.utils.logging_utils import setup_logging
+from .utils.logging_utils import setup_logging
 
 # Import tools - import with renamed functions to avoid conflicts
-from ios_forensics_mcp.tools.filesystem import directory
-from ios_forensics_mcp.tools.filesystem import file_reader
-from ios_forensics_mcp.tools.filesystem import file_type
-from ios_forensics_mcp.tools.filesystem import search
-from ios_forensics_mcp.tools.sqlite import analyzer
-from ios_forensics_mcp.tools.plist import parser
+from .tools.filesystem import directory
+from .tools.filesystem import file_reader
+from .tools.filesystem import file_type
+from .tools.filesystem import search
+from .tools.sqlite import analyzer
+from .tools.plist import parser
 
 # Configuration - dynamically import from root directory
 import importlib.util
