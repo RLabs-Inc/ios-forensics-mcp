@@ -1,0 +1,60 @@
+[project]
+name = "ios-forensics-mcp"
+version = "0.1.0"
+description = "iOS Forensics MCP Server for analyzing iPhone/iPad file systems"
+readme = "README.md"
+
+authors = [
+    { name = "Rodrigo Luglio", email = "rodrigo@rlabs.com.br" }
+]
+
+license = {text = "MIT"}
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Security",
+    "Topic :: System :: Forensics",
+]
+
+requires-python = ">=3.11"
+
+dependencies = [
+    "biplist",
+    "modelcontextprotocol",
+    "pillow",
+    "python-magic",
+]
+
+[dependency-groups]
+dev = [
+    "black",
+    "isort",
+    "mypy",
+    "pytest",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[project.scripts]
+ios-forensics-mcp = "ios_forensics_mcp:main"
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
